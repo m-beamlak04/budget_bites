@@ -51,10 +51,7 @@ class MealFormScreen extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: TextButton(
-                    onPressed: null,
-                    child: const Text('Save'),
-                  ),
+                  child: TextButton(onPressed: null, child: const Text('Save')),
                 ),
 
                 const SizedBox(width: 16),
