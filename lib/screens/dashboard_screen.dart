@@ -16,8 +16,7 @@ class DashboardScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Budget Bites')),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: ListView(
           children: [
             Card(
               child: Padding(
