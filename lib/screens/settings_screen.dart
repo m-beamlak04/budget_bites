@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends StatefulWidget {
   final bool isDarkMode;
@@ -16,6 +17,28 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   double _budget = 20;
+
+  Future<void> _saveBudget(double value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('meal_budget', value);
+  }
+
+  Future<void> _loadBudget() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedBudget = prefs.getDouble('meal_budget');
+
+    if (!mounted) return;
+
+    setState(() {
+      _budget = savedBudget ?? 20.0;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBudget();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +77,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         setState(() {
                           _budget = value;
                         });
+                      },
+                      onChangeEnd: (value) async {
+                        await _saveBudget(value);
                       },
                     ),
                     Text('Selected budget: \$${_budget.toStringAsFixed(2)}'),
