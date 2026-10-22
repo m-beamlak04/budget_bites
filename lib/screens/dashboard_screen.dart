@@ -1,14 +1,38 @@
-import 'package:budget_bites/screens/meal_form_screen.dart';
-import 'package:budget_bites/screens/meal_plan_screen.dart';
 import 'package:flutter/material.dart';
+
+import '../database/database_helper.dart';
+import '../models/meal.dart';
 
 import 'settings_screen.dart';
 import 'history_screen.dart';
 import 'meal_form_screen.dart';
 import 'meal_plan_screen.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  List<Meal> _meals = [];
+
+  Future<void> _loadMeals() async {
+    final meals = await DatabaseHelper.instance.getAllMeals();
+
+    if (!mounted) return;
+
+    setState(() {
+      _meals = meals;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMeals();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,18 +111,37 @@ class DashboardScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 8),
-                const Text('No meals added yet.'),
+
+                if (_meals.isEmpty)
+                  const Text('No meals added yet.')
+                else
+                  ..._meals.map((meal) {
+                    return Card(
+                      child: ListTile(
+                        title: Text(meal.name),
+                        subtitle: Text('${meal.cuisine} • ${meal.venue}'),
+                        trailing: Text('\$${meal.estimatedPrice.toStringAsFixed(2)}'),
+                      ),
+                    );
+                  }),
+
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
+                    onPressed: () async {
+                      final saved = await Navigator.push<bool>(
                         context,
                         MaterialPageRoute(
                           builder: (context) => const MealFormScreen(),
                         ),
                       );
+
+                      if (!mounted) return;
+
+                      if (saved == true) {
+                        await _loadMeals();
+                      }
                     },
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
