@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import '../models/meal.dart';
 
+import 'meal_detail_screen.dart';
 import 'settings_screen.dart';
 import 'history_screen.dart';
 import 'meal_form_screen.dart';
@@ -118,6 +119,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ..._meals.map((meal) {
                     return Card(
                       child: ListTile(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MealDetailScreen(meal: meal),
+                            ),
+                          );
+                        },
                         title: Text(meal.name),
                         subtitle: Text('${meal.cuisine} • ${meal.venue}'),
                         trailing: Text('\$${meal.estimatedPrice.toStringAsFixed(2)}'),

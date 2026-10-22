@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../models/meal.dart';
+
 class MealDetailScreen extends StatelessWidget {
-  const MealDetailScreen({super.key});
+  final Meal meal;
+
+  const MealDetailScreen({
+    super.key,
+    required this.meal,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -10,24 +17,27 @@ class MealDetailScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(
-          children: const [
+          children: [
             Text(
-              'Meal Name',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              meal.name,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             Card(
               child: Padding(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Cuisine: —'),
-                    SizedBox(height: 16),
-                    Text('Venue: —'),
-                    SizedBox(height: 16),
-                    Text('Estimated Price: —'),
+                    Text('Cuisine: ${meal.cuisine}'),
+                    const SizedBox(height: 16),
+                    Text('Venue: ${meal.venue}'),
+                    const SizedBox(height: 16),
+                    Text('Estimated Price: \$${meal.estimatedPrice.toStringAsFixed(2)}'),
                   ],
                 ),
               ),
@@ -35,7 +45,7 @@ class MealDetailScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            Row(
+            const Row(
               children: [
                 Expanded(
                   child: ElevatedButton(
