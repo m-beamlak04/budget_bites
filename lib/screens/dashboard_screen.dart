@@ -119,17 +119,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ..._meals.map((meal) {
                     return Card(
                       child: ListTile(
-                        onTap: () {
-                          Navigator.push(
+                        onTap: () async {
+                          final updated = await Navigator.push<bool>(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => MealDetailScreen(meal: meal),
+                              builder: (context) =>
+                                  MealDetailScreen(meal: meal),
                             ),
                           );
+
+                          if (updated == true && mounted) {
+                            _loadMeals();
+                          }
                         },
                         title: Text(meal.name),
                         subtitle: Text('${meal.cuisine} • ${meal.venue}'),
-                        trailing: Text('\$${meal.estimatedPrice.toStringAsFixed(2)}'),
+                        trailing: Text(
+                          '\$${meal.estimatedPrice.toStringAsFixed(2)}',
+                        ),
                       ),
                     );
                   }),

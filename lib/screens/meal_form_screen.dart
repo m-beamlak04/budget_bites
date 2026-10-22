@@ -4,7 +4,9 @@ import '../models/meal.dart';
 import '../database/database_helper.dart';
 
 class MealFormScreen extends StatefulWidget {
-  const MealFormScreen({super.key});
+  final Meal? meal;
+
+  const MealFormScreen({super.key, this.meal});
 
   @override
   State<MealFormScreen> createState() => _MealFormScreenState();
@@ -15,6 +17,20 @@ class _MealFormScreenState extends State<MealFormScreen> {
   final _cuisineController = TextEditingController();
   final _venueController = TextEditingController();
   final _priceController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.meal != null) {
+      final meal = widget.meal!;
+
+      _nameController.text = meal.name;
+      _cuisineController.text = meal.cuisine;
+      _venueController.text = meal.venue;
+      _priceController.text = meal.estimatedPrice.toString();
+    }
+  }
 
   @override
   void dispose() {
@@ -46,6 +62,7 @@ class _MealFormScreenState extends State<MealFormScreen> {
     }
 
     final meal = Meal(
+      id: widget.meal?.id,
       name: name,
       cuisine: cuisine,
       venue: venue,
@@ -53,7 +70,11 @@ class _MealFormScreenState extends State<MealFormScreen> {
     );
 
     try {
-      await DatabaseHelper.instance.insertMeal(meal);
+      if (widget.meal == null) {
+        await DatabaseHelper.instance.insertMeal(meal);
+      } else {
+        await DatabaseHelper.instance.updateMeal(meal);
+      }
 
       if (!mounted) return;
 
@@ -71,7 +92,9 @@ class _MealFormScreenState extends State<MealFormScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Meal')),
+      appBar: AppBar(
+        title: Text(widget.meal == null ? 'Add Meal' : 'Edit Meal'),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(

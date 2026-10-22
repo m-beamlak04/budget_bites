@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../models/meal.dart';
+import 'meal_form_screen.dart';
 
 class MealDetailScreen extends StatelessWidget {
   final Meal meal;
 
-  const MealDetailScreen({
-    super.key,
-    required this.meal,
-  });
+  const MealDetailScreen({super.key, required this.meal});
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +18,7 @@ class MealDetailScreen extends StatelessWidget {
           children: [
             Text(
               meal.name,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
 
@@ -37,7 +32,9 @@ class MealDetailScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     Text('Venue: ${meal.venue}'),
                     const SizedBox(height: 16),
-                    Text('Estimated Price: \$${meal.estimatedPrice.toStringAsFixed(2)}'),
+                    Text(
+                      'Estimated Price: \$${meal.estimatedPrice.toStringAsFixed(2)}',
+                    ),
                   ],
                 ),
               ),
@@ -45,16 +42,25 @@ class MealDetailScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            const Row(
+            Row(
               children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: null,
-                    child: const Text('Edit Meal'),
-                  ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final updated = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => MealFormScreen(meal: meal),
+                      ),
+                    );
+
+                    if (updated == true && context.mounted) {
+                      Navigator.pop(context, true);
+                    }
+                  },
+                  child: const Text('Edit Meal'),
                 ),
                 const SizedBox(width: 16),
-                Expanded(
+                const Expanded(
                   child: OutlinedButton(
                     onPressed: null,
                     child: const Text('Delete Meal'),
