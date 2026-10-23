@@ -33,6 +33,33 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
+  Future<void> _confirmDeletePurchase(PurchaseLog purchase) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Delete Purchase'),
+          content: const Text('Are you sure you want to delete this purchase?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    await DatabaseHelper.instance.deletePurchase(purchase.id!);
+    await _loadPurchases();
+  }
+
   Future<void> _showPurchaseDialog({PurchaseLog? existingPurchase}) async {
     final List<Meal> meals = await DatabaseHelper.instance.getAllMeals();
 
@@ -181,9 +208,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           );
 
                           if (existingPurchase == null) {
-                            await DatabaseHelper.instance.insertPurchase(purchase);
+                            await DatabaseHelper.instance.insertPurchase(
+                              purchase,
+                            );
                           } else {
-                            await DatabaseHelper.instance.updatePurchase(purchase);
+                            await DatabaseHelper.instance.updatePurchase(
+                              purchase,
+                            );
                           }
 
                           if (!context.mounted) return;
@@ -194,9 +225,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             await _loadPurchases();
                           }
                         },
-                  child: Text(
-                    existingPurchase == null ? 'Save' : 'Update',
-                  ),
+                  child: Text(existingPurchase == null ? 'Save' : 'Update'),
                 ),
               ],
             );
@@ -286,9 +315,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         IconButton(
                           icon: const Icon(Icons.edit_outlined),
                           tooltip: 'Edit Purchase',
-                          onPressed: () => _showPurchaseDialog(
-                            existingPurchase: purchase,
-                          ),
+                          onPressed: () =>
+                              _showPurchaseDialog(existingPurchase: purchase),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline),
+                          tooltip: 'Delete Purchase',
+                          onPressed: () => _confirmDeletePurchase(purchase),
                         ),
                       ],
                     ),
