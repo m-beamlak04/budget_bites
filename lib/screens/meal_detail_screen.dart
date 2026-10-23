@@ -3,11 +3,37 @@ import 'package:flutter/material.dart';
 import '../models/meal.dart';
 import 'meal_form_screen.dart';
 import '../database/database_helper.dart';
+import '../models/purchase_log.dart';
 
-class MealDetailScreen extends StatelessWidget {
+class MealDetailScreen extends StatefulWidget {
   final Meal meal;
 
   const MealDetailScreen({super.key, required this.meal});
+
+  @override
+  State<MealDetailScreen> createState() => _MealDetailScreenState();
+}
+
+class _MealDetailScreenState extends State<MealDetailScreen> {
+  List<PurchaseLog> _purchases = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPurchases();
+  }
+
+  Future<void> _loadPurchases() async {
+    final allPurchases = await DatabaseHelper.instance.getAllPurchases();
+
+    if (!mounted) return;
+
+    setState(() {
+      _purchases = allPurchases.where((purchase) {
+        return purchase.mealId == widget.meal.id;
+      }).toList();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +44,7 @@ class MealDetailScreen extends StatelessWidget {
         child: ListView(
           children: [
             Text(
-              meal.name,
+              widget.meal.name,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
@@ -29,12 +55,12 @@ class MealDetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Cuisine: ${meal.cuisine}'),
+                    Text('Cuisine: ${widget.meal.cuisine}'),
                     const SizedBox(height: 16),
-                    Text('Venue: ${meal.venue}'),
+                    Text('Venue: ${widget.meal.venue}'),
                     const SizedBox(height: 16),
                     Text(
-                      'Estimated Price: \$${meal.estimatedPrice.toStringAsFixed(2)}',
+                      'Estimated Price: \$${widget.meal.estimatedPrice.toStringAsFixed(2)}',
                     ),
                   ],
                 ),
@@ -50,7 +76,7 @@ class MealDetailScreen extends StatelessWidget {
                     final updated = await Navigator.push<bool>(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => MealFormScreen(meal: meal),
+                        builder: (context) => MealFormScreen(meal: widget.meal),
                       ),
                     );
 
@@ -70,7 +96,7 @@ class MealDetailScreen extends StatelessWidget {
                           return AlertDialog(
                             title: const Text('Delete Meal?'),
                             content: Text(
-                              'Are you sure you want to delete ${meal.name}?',
+                              'Are you sure you want to delete ${widget.meal.name}?',
                             ),
                             actions: [
                               TextButton(
@@ -93,7 +119,7 @@ class MealDetailScreen extends StatelessWidget {
 
                       try {
                         final deletedRows = await DatabaseHelper.instance
-                            .deleteMeal(meal.id!);
+                            .deleteMeal(widget.meal.id!);
 
                         if (!context.mounted) return;
 
@@ -133,12 +159,26 @@ class MealDetailScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            const Card(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Text('No purchase activity yet.'),
-              ),
-            ),
+            if (_purchases.isEmpty)
+              const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text('No purchase activity yet.'),
+                ),
+              )
+            else
+              ..._purchases.map((purchase) {
+                return Card(
+                  child: ListTile(
+                    title: Text(
+                      '\$${(purchase.actualPriceMinor / 100).toStringAsFixed(2)}',
+                    ),
+                    subtitle: Text(
+                      'Purchased on ${purchase.purchasedAt.month}/${purchase.purchasedAt.day}/${purchase.purchasedAt.year}',
+                    ),
+                  ),
+                );
+              }),
           ],
         ),
       ),
