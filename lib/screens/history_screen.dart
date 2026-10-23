@@ -33,13 +33,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
-  Future<void> _showAddPurchaseDialog() async {
+  Future<void> _showPurchaseDialog({PurchaseLog? existingPurchase}) async {
     final List<Meal> meals = await DatabaseHelper.instance.getAllMeals();
 
     if (!mounted) return;
-    int? selectedMealId;
-    final priceController = TextEditingController();
-    DateTime selectedDate = DateTime.now();
+    int? selectedMealId = existingPurchase?.mealId;
+
+    final priceController = TextEditingController(
+      text: existingPurchase == null
+          ? ''
+          : (existingPurchase.actualPriceMinor / 100).toStringAsFixed(2),
+    );
+
+    DateTime selectedDate = existingPurchase?.purchasedAt ?? DateTime.now();
     String? errorMessage;
 
     showDialog(
@@ -48,7 +54,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Add Purchase'),
+              title: Text(
+                existingPurchase == null ? 'Add Purchase' : 'Edit Purchase',
+              ),
               content: meals.isEmpty
                   ? const Text('No meals available. Add a meal first.')
                   : Column(
@@ -166,14 +174,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           final priceMinor = (price * 100).round();
 
                           final purchase = PurchaseLog(
+                            id: existingPurchase?.id,
                             mealId: selectedMealId!,
                             purchasedAt: selectedDate,
                             actualPriceMinor: priceMinor,
                           );
 
-                          await DatabaseHelper.instance.insertPurchase(
-                            purchase,
-                          );
+                          if (existingPurchase == null) {
+                            await DatabaseHelper.instance.insertPurchase(purchase);
+                          } else {
+                            await DatabaseHelper.instance.updatePurchase(purchase);
+                          }
 
                           if (!context.mounted) return;
 
@@ -183,7 +194,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             await _loadPurchases();
                           }
                         },
-                  child: const Text('Save'),
+                  child: Text(
+                    existingPurchase == null ? 'Save' : 'Update',
+                  ),
                 ),
               ],
             );
@@ -264,8 +277,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     subtitle: Text(
                       'Date: ${purchase.purchasedAt.month}/${purchase.purchasedAt.day}/${purchase.purchasedAt.year}',
                     ),
-                    trailing: Text(
-                      '\$${(purchase.actualPriceMinor / 100).toStringAsFixed(2)}',
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '\$${(purchase.actualPriceMinor / 100).toStringAsFixed(2)}',
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.edit_outlined),
+                          tooltip: 'Edit Purchase',
+                          onPressed: () => _showPurchaseDialog(
+                            existingPurchase: purchase,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -273,7 +298,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             const SizedBox(height: 32),
 
             OutlinedButton(
-              onPressed: _showAddPurchaseDialog,
+              onPressed: () => _showPurchaseDialog(),
               child: const Text('Add Purchase'),
             ),
           ],
