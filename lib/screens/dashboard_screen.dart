@@ -25,6 +25,24 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   List<Meal> _meals = [];
+  String _selectedCuisine = 'All';
+
+  List<String> get _cuisines {
+    final cuisines = _meals.map((meal) => meal.cuisine).toSet().toList();
+    cuisines.sort();
+
+    return ['All', ...cuisines];
+  }
+
+  List<Meal> get _filteredMeals {
+    if (_selectedCuisine == 'All') {
+      return _meals;
+    }
+
+    return _meals.where((meal) {
+      return meal.cuisine == _selectedCuisine;
+    }).toList();
+  }
 
   Future<void> _loadMeals() async {
     final meals = await DatabaseHelper.instance.getAllMeals();
@@ -33,6 +51,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     setState(() {
       _meals = meals;
+
+      if (_selectedCuisine != 'All' &&
+          !meals.any((meal) => meal.cuisine == _selectedCuisine)) {
+        _selectedCuisine = 'All';
+      }
     });
   }
 
@@ -108,13 +131,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.filter_list),
-                        SizedBox(width: 8),
-                        Text('Filter'),
-                      ],
+                    DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedCuisine,
+                        isDense: true,
+                        icon: const Icon(Icons.arrow_drop_down),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        items: _cuisines.map((cuisine) {
+                          return DropdownMenuItem<String>(
+                            value: cuisine,
+                            child: Text(
+                              cuisine == 'All' ? 'All Cuisines' : cuisine,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value == null) return;
+
+                          setState(() {
+                            _selectedCuisine = value;
+                          });
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -123,7 +164,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 if (_meals.isEmpty)
                   const Text('No meals added yet.')
                 else
-                  ..._meals.map((meal) {
+                  ..._filteredMeals.map((meal) {
                     return Card(
                       child: ListTile(
                         onTap: () async {
