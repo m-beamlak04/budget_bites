@@ -88,10 +88,7 @@ class DatabaseHelper {
   Future<int> insertPurchase(PurchaseLog purchase) async {
     final db = await _openDatabase();
 
-    final id = await db.insert(
-      'purchase_logs',
-      purchase.toMap()..remove('id'),
-    );
+    final id = await db.insert('purchase_logs', purchase.toMap()..remove('id'));
 
     return id;
   }
@@ -121,10 +118,6 @@ class DatabaseHelper {
   Future<int> deletePurchase(int id) async {
     final db = await _openDatabase();
 
-    return await db.delete(
-      'purchase_logs',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    return await db.delete('purchase_logs', where: 'id = ?', whereArgs: [id]);
   }
 }
