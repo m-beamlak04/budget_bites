@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../database/database_helper.dart';
 import '../models/meal.dart';
 
@@ -11,7 +12,7 @@ class MealPlanScreen extends StatefulWidget {
 
 class _MealPlanScreenState extends State<MealPlanScreen> {
   List<Meal> _meals = [];
-  Map<int, int> _quantities = {};
+  final Map<int, int> _quantities = {};
 
   double get _estimatedTotal {
     double total = 0;
@@ -22,6 +23,44 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     }
 
     return total;
+  }
+
+  int get _selectedMealCount {
+    int count = 0;
+
+    for (final quantity in _quantities.values) {
+      count += quantity;
+    }
+
+    return count;
+  }
+
+  Future<void> _resetPlan() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Reset Meal Plan?'),
+        content: const Text(
+          'This will clear all selected meals. No purchases will be saved.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Reset'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() {
+      _quantities.clear();
+    });
   }
 
   @override
@@ -57,11 +96,14 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
               const Text('No meals available. Add a meal first.')
             else
               ..._meals.map((meal) {
+                final quantity = _quantities[meal.id] ?? 0;
+                final subtotal = meal.estimatedPrice * quantity;
                 return Card(
                   child: ListTile(
                     title: Text(meal.name),
                     subtitle: Text(
-                      'Estimated Price: \$${meal.estimatedPrice.toStringAsFixed(2)}',
+                      'Estimated Price: \$${meal.estimatedPrice.toStringAsFixed(2)}\n'
+                          'Subtotal: \$${subtotal.toStringAsFixed(2)}',
                     ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -95,21 +137,22 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
               }),
             const SizedBox(height: 24),
 
-            Text('Estimated Total: \$${_estimatedTotal.toStringAsFixed(2)}',
+            Text(
+              'Estimated Total: \$${_estimatedTotal.toStringAsFixed(2)}',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 24),
 
-            const Card(
+            Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text('Status: In Progress'),
-                    SizedBox(height: 24),
-                    Text('0 meals selected'),
+                  children: [
+                    const Text('Status: In Progress'),
+                    const SizedBox(height: 24),
+                    Text('$_selectedMealCount meals selected'),
                   ],
                 ),
               ),
@@ -117,21 +160,21 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
 
             const SizedBox(height: 24),
 
-            const Row(
+            Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: null,
+                    onPressed: _selectedMealCount > 0 ? _resetPlan : null,
                     child: const Text('Reset'),
                   ),
                 ),
 
                 const SizedBox(width: 16),
 
-                Expanded(
+                const Expanded(
                   child: ElevatedButton(
                     onPressed: null,
-                    child: const Text('Finish'),
+                    child: Text('Finish'),
                   ),
                 ),
               ],
