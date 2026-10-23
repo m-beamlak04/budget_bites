@@ -14,6 +14,26 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen> {
   List<PurchaseLog> _purchases = [];
   List<Meal> _meals = [];
+  DateTime? _selectedFilterDate;
+
+  int get _totalSpentMinor {
+    return _purchases.fold(
+      0,
+      (total, purchase) => total + purchase.actualPriceMinor,
+    );
+  }
+
+  List<PurchaseLog> get _filteredPurchases {
+    if (_selectedFilterDate == null) {
+      return _purchases;
+    }
+
+    return _purchases.where((purchase) {
+      return purchase.purchasedAt.year == _selectedFilterDate!.year &&
+          purchase.purchasedAt.month == _selectedFilterDate!.month &&
+          purchase.purchasedAt.day == _selectedFilterDate!.day;
+    }).toList();
+  }
 
   @override
   void initState() {
@@ -30,6 +50,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
     setState(() {
       _purchases = purchases;
       _meals = meals;
+    });
+  }
+
+  Future<void> _pickFilterDate() async {
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedFilterDate ?? DateTime.now(),
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+    );
+
+    if (!mounted || pickedDate == null) return;
+
+    setState(() {
+      _selectedFilterDate = pickedDate;
     });
   }
 
@@ -248,21 +283,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            const Card(
+            Card(
               child: Padding(
-                padding: EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'Spending Summary',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 16),
-                    Text('Total Spent: \$0.00'),
+                    const SizedBox(height: 16),
+                    Text(
+                      'All-Time Total Spent: \$${(_totalSpentMinor / 100).toStringAsFixed(2)}',
+                    ),
                   ],
                 ),
               ),
@@ -276,22 +313,33 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   'Purchases',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                const Row(
+                Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.filter_list),
-                    SizedBox(width: 8),
-                    Text('Filter'),
+                    if (_selectedFilterDate != null)
+                      TextButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedFilterDate = null;
+                          });
+                        },
+                        child: const Text('Clear Filter'),
+                      ),
+                    TextButton.icon(
+                      onPressed: _pickFilterDate,
+                      icon: const Icon(Icons.filter_list),
+                      label: const Text('Filter'),
+                    ),
                   ],
                 ),
               ],
             ),
 
             const SizedBox(height: 16),
-            if (_purchases.isEmpty)
+            if (_filteredPurchases.isEmpty)
               const Text('No purchases recorded yet.')
             else
-              ..._purchases.map((purchase) {
+              ..._filteredPurchases.map((purchase) {
                 final matchingMeals = _meals.where(
                   (meal) => meal.id == purchase.mealId,
                 );
