@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../database/database_helper.dart';
 import '../models/meal.dart';
+import '../models/purchase_log.dart';
 
 class MealPlanScreen extends StatefulWidget {
   const MealPlanScreen({super.key});
@@ -13,6 +14,7 @@ class MealPlanScreen extends StatefulWidget {
 class _MealPlanScreenState extends State<MealPlanScreen> {
   List<Meal> _meals = [];
   final Map<int, int> _quantities = {};
+  bool _isSaving = false;
 
   double get _estimatedTotal {
     double total = 0;
@@ -61,6 +63,162 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     setState(() {
       _quantities.clear();
     });
+  }
+
+  String? _validatePrice(String input) {
+    final text = input.trim();
+    final price = double.tryParse(text);
+
+    if (price == null) {
+      return 'Enter a valid price.';
+    }
+
+    if (!price.isFinite || price < 0) {
+      return 'Price must be zero or greater.';
+    }
+
+    if (!RegExp(r'^\d+(\.\d{1,2})?$').hasMatch(text)) {
+      return 'Use at most 2 decimal places.';
+    }
+
+    return null;
+  }
+
+  Future<void> _finishPlan() async {
+    final selectedMeals = _meals.where(
+          (meal) => (_quantities[meal.id] ?? 0) > 0,
+    ).toList();
+
+    final priceControllers = <int, TextEditingController>{};
+
+    for (final meal in selectedMeals) {
+      priceControllers[meal.id!] = TextEditingController(
+        text: meal.estimatedPrice.toStringAsFixed(2),
+      );
+    }
+
+    final confirmedPurchases = await showDialog<Map<int, int>>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Review Meal Plan'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final meal in selectedMeals)
+              ListTile(
+                title: Text(meal.name),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Quantity: ${_quantities[meal.id]}'),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: priceControllers[meal.id],
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: const InputDecoration(
+                        labelText: 'Actual Price (per meal)',
+                        prefixText: '\$',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              for (final meal in selectedMeals) {
+                final input = priceControllers[meal.id]!.text;
+                final error = _validatePrice(input);
+
+                if (error != null) {
+                  ScaffoldMessenger.of(this.context).showSnackBar(
+                    SnackBar(content: Text('${meal.name}: $error')),
+                  );
+                  return;
+                }
+              }
+
+              final purchaseData = <int, int>{};
+
+              for (final meal in selectedMeals) {
+                final input = priceControllers[meal.id]!.text.trim();
+                final actualPrice = double.parse(input);
+
+                purchaseData[meal.id!] = (actualPrice * 100).round();
+              }
+
+              Navigator.pop(context, purchaseData);
+            },
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmedPurchases == null || !mounted || _isSaving) return;
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      await _savePlanPurchases(selectedMeals, confirmedPurchases);
+
+      if (!mounted) return;
+
+      setState(() {
+        _quantities.clear();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Meal plan purchases saved successfully!'),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not save meal plan purchases.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _savePlanPurchases(
+      List<Meal> selectedMeals,
+      Map<int, int> purchaseData,
+      ) async {
+    for (final meal in selectedMeals) {
+      final quantity = _quantities[meal.id] ?? 0;
+      final actualPriceMinor = purchaseData[meal.id]!;
+
+      for (int i = 0; i < quantity; i++) {
+        final purchase = PurchaseLog(
+          mealId: meal.id!,
+          purchasedAt: DateTime.now(),
+          actualPriceMinor: actualPriceMinor,
+        );
+
+        await DatabaseHelper.instance.insertPurchase(purchase);
+      }
+    }
   }
 
   @override
@@ -171,10 +329,12 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
 
                 const SizedBox(width: 16),
 
-                const Expanded(
+                Expanded(
                   child: ElevatedButton(
-                    onPressed: null,
-                    child: Text('Finish'),
+                    onPressed: _selectedMealCount > 0 && !_isSaving
+                        ? _finishPlan
+                        : null,
+                    child: const Text('Finish'),
                   ),
                 ),
               ],
