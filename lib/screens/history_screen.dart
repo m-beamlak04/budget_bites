@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../database/database_helper.dart';
 import '../models/purchase_log.dart';
 import '../models/meal.dart';
+import '../services/lunch_lens_predictor.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -97,6 +98,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Future<void> _showPurchaseDialog({PurchaseLog? existingPurchase}) async {
     final List<Meal> meals = await DatabaseHelper.instance.getAllMeals();
+    final purchases = await DatabaseHelper.instance.getAllPurchases();
 
     if (!mounted) return;
     int? selectedMealId = existingPurchase?.mealId;
@@ -153,7 +155,39 @@ class _HistoryScreenState extends State<HistoryScreen> {
                             });
                           },
                         ),
-                        const SizedBox(height: 16),
+                        if (selectedMealId != null) ...[
+                          const SizedBox(height: 8),
+                          Builder(
+                            builder: (context) {
+                              final prediction = LunchLensPredictor.predictPrice(
+                                selectedMealId!,
+                                purchases,
+                              );
+
+                              return Row(
+                                children: [
+                                  const Icon(
+                                    Icons.lightbulb_outline,
+                                    size: 20,
+                                    color: Colors.amber,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      prediction == null
+                                          ? 'Lunch Lens: Not enough history'
+                                          : 'Lunch Lens suggests: \$${(prediction / 100).toStringAsFixed(2)}',
+                                      style: TextStyle(
+                                        color: Theme.of(context).colorScheme.secondary,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                        const SizedBox(height: 24),
                         TextField(
                           controller: priceController,
                           keyboardType: const TextInputType.numberWithOptions(
