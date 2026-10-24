@@ -8,6 +8,7 @@ import 'settings_screen.dart';
 import 'history_screen.dart';
 import 'meal_form_screen.dart';
 import 'meal_plan_screen.dart';
+import 'lunch_lens_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   final bool isDarkMode;
@@ -226,6 +227,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
       bottomNavigationBar: SafeArea(
         child: Row(
           children: [
+            Expanded(
+              child: TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LunchLensScreen(),
+                    ),
+                  );
+                },
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.auto_awesome),
+                    SizedBox(width: 8),
+                    Text('Lunch Lens'),
+                  ],
+                ),
+              ),
+            ),
             Expanded(
               child: TextButton(
                 onPressed: () {
