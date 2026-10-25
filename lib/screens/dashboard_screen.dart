@@ -265,12 +265,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   );
                 },
-                child: const Row(
+                child: const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.auto_awesome),
-                    SizedBox(width: 8),
-                    Text('Lunch Lens'),
+                    SizedBox(height: 4),
+                    Text('Lunch Lens', textAlign: TextAlign.center),
                   ],
                 ),
               ),
@@ -285,12 +285,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   );
                 },
-                child: const Row(
+                child: const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.history),
-                    SizedBox(width: 8),
-                    Text('History'),
+                    SizedBox(height: 4),
+                    Text('History', textAlign: TextAlign.center),
                   ],
                 ),
               ),
@@ -308,12 +308,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   );
                 },
-                child: const Row(
+                child: const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.settings),
-                    SizedBox(width: 8),
-                    Text('Settings'),
+                    SizedBox(height: 4),
+                    Text('Settings', textAlign: TextAlign.center),
                   ],
                 ),
               ),
