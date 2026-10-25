@@ -82,7 +82,11 @@ class DatabaseHelper {
   Future<int> deleteMeal(int id) async {
     final db = await _openDatabase();
 
-    return await db.delete('meals', where: 'id = ?', whereArgs: [id]);
+    return await db.transaction((txn) async {
+      await txn.delete('purchase_logs', where: 'mealId = ?', whereArgs: [id]);
+
+      return await txn.delete('meals', where: 'id = ?', whereArgs: [id]);
+    });
   }
 
   Future<int> insertPurchase(PurchaseLog purchase) async {
