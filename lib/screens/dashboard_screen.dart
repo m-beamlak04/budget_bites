@@ -27,6 +27,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   List<Meal> _meals = [];
   String _selectedCuisine = 'All';
+  bool _isLoading = true;
 
   List<String> get _cuisines {
     final cuisines = _meals.map((meal) => meal.cuisine).toSet().toList();
@@ -46,18 +47,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Future<void> _loadMeals() async {
-    final meals = await DatabaseHelper.instance.getAllMeals();
-
-    if (!mounted) return;
-
     setState(() {
-      _meals = meals;
-
-      if (_selectedCuisine != 'All' &&
-          !meals.any((meal) => meal.cuisine == _selectedCuisine)) {
-        _selectedCuisine = 'All';
-      }
+      _isLoading = true;
     });
+
+    try {
+      final meals = await DatabaseHelper.instance.getAllMeals();
+
+      if (!mounted) return;
+
+      setState(() {
+        _meals = meals;
+
+        if (_selectedCuisine != 'All' &&
+            !meals.any((meal) => meal.cuisine == _selectedCuisine)) {
+          _selectedCuisine = 'All';
+        }
+      });
+    } catch (error) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not load meals. Please try again.'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -162,7 +183,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
                 const SizedBox(height: 8),
 
-                if (_meals.isEmpty)
+                if (_isLoading)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: CircularProgressIndicator(),
+                    ),
+                  )
+                else if (_meals.isEmpty)
                   const Text('No meals added yet.')
                 else
                   ..._filteredMeals.map((meal) {
@@ -237,12 +265,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   );
                 },
-                child: const Row(
+                child: const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.auto_awesome),
-                    SizedBox(width: 8),
-                    Text('Lunch Lens'),
+                    SizedBox(height: 4),
+                    Text('Lunch Lens', textAlign: TextAlign.center),
                   ],
                 ),
               ),
@@ -257,12 +285,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   );
                 },
-                child: const Row(
+                child: const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.history),
-                    SizedBox(width: 8),
-                    Text('History'),
+                    SizedBox(height: 4),
+                    Text('History', textAlign: TextAlign.center),
                   ],
                 ),
               ),
@@ -280,12 +308,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   );
                 },
-                child: const Row(
+                child: const Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.settings),
-                    SizedBox(width: 8),
-                    Text('Settings'),
+                    SizedBox(height: 4),
+                    Text('Settings', textAlign: TextAlign.center),
                   ],
                 ),
               ),

@@ -100,6 +100,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     final confirmedPurchases = await showDialog<Map<int, int>>(
       context: context,
       builder: (context) => AlertDialog(
+        scrollable: true,
         title: const Text('Review Meal Plan'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
