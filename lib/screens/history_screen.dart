@@ -118,6 +118,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
+              scrollable: true,
               title: Text(
                 existingPurchase == null ? 'Add Purchase' : 'Edit Purchase',
               ),
