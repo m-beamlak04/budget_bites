@@ -5,10 +5,12 @@ import '../models/meal.dart';
 import '../models/purchase_log.dart';
 
 class DatabaseHelper {
+  // Uses a single shared DatabaseHelper instance throughout the app
   static final DatabaseHelper instance = DatabaseHelper._internal();
 
   DatabaseHelper._internal();
 
+  // Opens the local SQLite database and creates or upgrades its tables
   Future<Database> _openDatabase() async {
     final databasePath = await getDatabasesPath();
     final path = join(databasePath, 'budget_bites.db');
@@ -16,6 +18,7 @@ class DatabaseHelper {
     return await openDatabase(
       path,
       version: 2,
+      // Creates the meals and purchase history tables for a new database
       onCreate: (db, version) async {
         await db.execute('''
       CREATE TABLE meals (
@@ -36,6 +39,7 @@ class DatabaseHelper {
   )
 ''');
       },
+      // Adds the purchase history table when upgrading from database version 1
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
           await db.execute('''
@@ -52,6 +56,7 @@ class DatabaseHelper {
     );
   }
 
+  // Inserts a new meal and returns its generated database ID
   Future<int> insertMeal(Meal meal) async {
     final db = await _openDatabase();
 
@@ -60,6 +65,7 @@ class DatabaseHelper {
     return id;
   }
 
+  // Retrieves all meals from the database, newest first
   Future<List<Meal>> getAllMeals() async {
     final db = await _openDatabase();
 
@@ -68,6 +74,7 @@ class DatabaseHelper {
     return maps.map((map) => Meal.fromMap(map)).toList();
   }
 
+  // Updates an existing meal using its ID
   Future<int> updateMeal(Meal meal) async {
     final db = await _openDatabase();
 
@@ -79,6 +86,7 @@ class DatabaseHelper {
     );
   }
 
+  // Deletes a meal and its purchase records together in a transaction
   Future<int> deleteMeal(int id) async {
     final db = await _openDatabase();
 
@@ -89,6 +97,7 @@ class DatabaseHelper {
     });
   }
 
+  // Saves a new purchase record and returns its generated ID
   Future<int> insertPurchase(PurchaseLog purchase) async {
     final db = await _openDatabase();
 
@@ -97,6 +106,7 @@ class DatabaseHelper {
     return id;
   }
 
+  // Retrieves purchase records with the newest purchases first
   Future<List<PurchaseLog>> getAllPurchases() async {
     final db = await _openDatabase();
 
@@ -108,6 +118,7 @@ class DatabaseHelper {
     return maps.map((map) => PurchaseLog.fromMap(map)).toList();
   }
 
+  // Updates an existing purchase record using its ID
   Future<int> updatePurchase(PurchaseLog purchase) async {
     final db = await _openDatabase();
 
@@ -119,6 +130,7 @@ class DatabaseHelper {
     );
   }
 
+  // Deletes a specific purchase record using its ID
   Future<int> deletePurchase(int id) async {
     final db = await _openDatabase();
 

@@ -18,11 +18,13 @@ class BudgetBitesApp extends StatefulWidget {
 class _BudgetBitesAppState extends State<BudgetBitesApp> {
   bool _isDarkMode = false;
 
+  // Saves the user's theme preference for future app launches
   Future<void> _saveTheme(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('dark_mode', value);
   }
 
+  // Loads the saved theme, or uses light mode if none is saved
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
     final savedTheme = prefs.getBool('dark_mode');
@@ -34,6 +36,7 @@ class _BudgetBitesAppState extends State<BudgetBitesApp> {
     });
   }
 
+  // Updates the current theme and saves the new preference
   Future<void> _changeTheme(bool value) async {
     setState(() {
       _isDarkMode = value;

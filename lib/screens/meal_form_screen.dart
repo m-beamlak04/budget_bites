@@ -18,6 +18,7 @@ class _MealFormScreenState extends State<MealFormScreen> {
   final _venueController = TextEditingController();
   final _priceController = TextEditingController();
 
+  // Fills in the form with the existing meal's information when editing
   @override
   void initState() {
     super.initState();
@@ -32,6 +33,7 @@ class _MealFormScreenState extends State<MealFormScreen> {
     }
   }
 
+  // Cleans up the text controllers when leaving the screen
   @override
   void dispose() {
     _nameController.dispose();
@@ -41,6 +43,7 @@ class _MealFormScreenState extends State<MealFormScreen> {
     super.dispose();
   }
 
+  // Reads and validates the form inputs before saving the meal
   Future<void> _saveMeal() async {
     final name = _nameController.text.trim();
     final cuisine = _cuisineController.text.trim();
@@ -69,6 +72,7 @@ class _MealFormScreenState extends State<MealFormScreen> {
       estimatedPrice: price,
     );
 
+    // Inserts a new meal or updates an existing one
     try {
       if (widget.meal == null) {
         await DatabaseHelper.instance.insertMeal(meal);
@@ -78,6 +82,7 @@ class _MealFormScreenState extends State<MealFormScreen> {
 
       if (!mounted) return;
 
+      // Returns true so the previous screen knows to refresh its meal list
       Navigator.pop(context, true);
     } catch (error) {
       debugPrint('Error saving meal: $error');

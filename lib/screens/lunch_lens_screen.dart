@@ -18,14 +18,17 @@ class _LunchLensScreenState extends State<LunchLensScreen> {
   List<PurchaseLog> _purchases = [];
   double _budget = 20.0;
 
+  // Gets the predicted price for a meal using its purchase history
   int? _predictedPrice(int mealId) {
     return LunchLensPredictor.predictPrice(mealId, _purchases);
   }
 
+  // Gets the most recent recorded price for comparison
   int? _baselinePrice(int mealId) {
     return LunchLensPredictor.baselinePrice(mealId, _purchases);
   }
 
+  // Checks whether the predicted price is within the user's saved budget
   bool? _isAffordable(int mealId) {
     final prediction = _predictedPrice(mealId);
 
@@ -36,6 +39,7 @@ class _LunchLensScreenState extends State<LunchLensScreen> {
     return prediction <= (_budget * 100).round();
   }
 
+  // Gets the three most recent purchases to explain the prediction
   List<PurchaseLog> _recentPurchases(int mealId) {
     return LunchLensPredictor.getMealPurchases(
       mealId,
@@ -49,6 +53,7 @@ class _LunchLensScreenState extends State<LunchLensScreen> {
     _loadData();
   }
 
+  // Loads meals, purchase history, and the saved budget when the screen opens
   Future<void> _loadData() async {
     final meals = await DatabaseHelper.instance.getAllMeals();
     final purchases = await DatabaseHelper.instance.getAllPurchases();
@@ -75,7 +80,6 @@ class _LunchLensScreenState extends State<LunchLensScreen> {
           final baseline = _baselinePrice(meal.id!);
           final affordable = _isAffordable(meal.id!);
           final recentPurchases = _recentPurchases(meal.id!);
-
 
           return Card(
             margin: const EdgeInsets.only(bottom: 12),
@@ -163,24 +167,18 @@ class _LunchLensScreenState extends State<LunchLensScreen> {
                     const SizedBox(height: 6),
                     Text(
                       'Last 3 purchases: '
-                          '${recentPurchases.map((purchase) => '\$${(purchase.actualPriceMinor / 100).toStringAsFixed(2)}').join(', ')}',
+                      '${recentPurchases.map((purchase) => '\$${(purchase.actualPriceMinor / 100).toStringAsFixed(2)}').join(', ')}',
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Purchase dates: '
-                          '${DateUtils.isSameDay(
-                        recentPurchases.first.purchasedAt,
-                        recentPurchases.last.purchasedAt,
-                      )
-                          ? '${recentPurchases.first.purchasedAt.month}/${recentPurchases.first.purchasedAt.day}/${recentPurchases.first.purchasedAt.year}'
-                          : '${recentPurchases.last.purchasedAt.month}/${recentPurchases.last.purchasedAt.day}/${recentPurchases.last.purchasedAt.year} - ${recentPurchases.first.purchasedAt.month}/${recentPurchases.first.purchasedAt.day}/${recentPurchases.first.purchasedAt.year}'}',
+                      '${DateUtils.isSameDay(recentPurchases.first.purchasedAt, recentPurchases.last.purchasedAt) ? '${recentPurchases.first.purchasedAt.month}/${recentPurchases.first.purchasedAt.day}/${recentPurchases.first.purchasedAt.year}' : '${recentPurchases.last.purchasedAt.month}/${recentPurchases.last.purchasedAt.day}/${recentPurchases.last.purchasedAt.year} - ${recentPurchases.first.purchasedAt.month}/${recentPurchases.first.purchasedAt.day}/${recentPurchases.first.purchasedAt.year}'}',
                     ),
                   ],
                 ],
               ),
             ),
           );
-
         }).toList(),
       ),
     );

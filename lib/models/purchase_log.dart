@@ -1,3 +1,4 @@
+// Represents a purchase linked to a meal, including its date and actual price
 class PurchaseLog {
   final int? id;
   final int mealId;
@@ -11,6 +12,7 @@ class PurchaseLog {
     required this.actualPriceMinor,
   });
 
+  // Converts purchase information into a map for the database
   Map<String, Object?> toMap() {
     return {
       'id': id,
@@ -20,6 +22,7 @@ class PurchaseLog {
     };
   }
 
+  // Creates a PurchaseLog object from database data
   factory PurchaseLog.fromMap(Map<String, Object?> map) {
     return PurchaseLog(
       id: map['id'] as int?,

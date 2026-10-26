@@ -17,6 +17,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   List<Meal> _meals = [];
   DateTime? _selectedFilterDate;
 
+  // Calculates the total amount spent across all purchases in cents
   int get _totalSpentMinor {
     return _purchases.fold(
       0,
@@ -24,6 +25,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
+  // Filters purchase records by the selected date, if one is chosen
   List<PurchaseLog> get _filteredPurchases {
     if (_selectedFilterDate == null) {
       return _purchases;
@@ -42,6 +44,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     _loadPurchases();
   }
 
+  // Loads purchases and meals from the database
   Future<void> _loadPurchases() async {
     final purchases = await DatabaseHelper.instance.getAllPurchases();
     final meals = await DatabaseHelper.instance.getAllMeals();
@@ -54,6 +57,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
+  // Opens a calendar so the user can filter purchases by date
   Future<void> _pickFilterDate() async {
     final pickedDate = await showDatePicker(
       context: context,
@@ -69,6 +73,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
   }
 
+  // Asks for confirmation before deleting a purchase record
   Future<void> _confirmDeletePurchase(PurchaseLog purchase) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -96,6 +101,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     await _loadPurchases();
   }
 
+  // Opens a dialog for adding or editing a purchase
   Future<void> _showPurchaseDialog({PurchaseLog? existingPurchase}) async {
     final List<Meal> meals = await DatabaseHelper.instance.getAllMeals();
     final purchases = await DatabaseHelper.instance.getAllPurchases();
@@ -115,6 +121,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     showDialog(
       context: context,
       builder: (context) {
+        // Updates the dialog when the user changes the meal, date, or validation state
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
@@ -160,10 +167,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           const SizedBox(height: 8),
                           Builder(
                             builder: (context) {
-                              final prediction = LunchLensPredictor.predictPrice(
-                                selectedMealId!,
-                                purchases,
-                              );
+                              final prediction =
+                                  LunchLensPredictor.predictPrice(
+                                    selectedMealId!,
+                                    purchases,
+                                  );
 
                               return Row(
                                 children: [
@@ -179,7 +187,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                           ? 'Lunch Lens: Not enough history'
                                           : 'Lunch Lens suggests: \$${(prediction / 100).toStringAsFixed(2)}',
                                       style: TextStyle(
-                                        color: Theme.of(context).colorScheme.secondary,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary,
                                       ),
                                     ),
                                   ),
@@ -375,6 +385,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               const Text('No purchases recorded yet.')
             else
               ..._filteredPurchases.map((purchase) {
+                // Finds the meal associated with each purchase so its name can be displayed
                 final matchingMeals = _meals.where(
                   (meal) => meal.id == purchase.mealId,
                 );

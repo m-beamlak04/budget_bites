@@ -18,11 +18,13 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   double _budget = 20;
 
+  // Saves the selected meal budget to local preferences
   Future<void> _saveBudget(double value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('meal_budget', value);
   }
 
+  // Loads the saved budget or uses $20(default) if none has been saved
   Future<void> _loadBudget() async {
     final prefs = await SharedPreferences.getInstance();
     final savedBudget = prefs.getDouble('meal_budget');
@@ -68,6 +70,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: 16),
                     Text('Budget: \$${_budget.toStringAsFixed(2)}'),
+                    // Updates the displayed budget while dragging and saves it when released
                     Slider(
                       value: _budget,
                       min: 0,
@@ -112,6 +115,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                         const SizedBox(width: 16),
 
+                        // Sends theme changes back to the parent to update the app's appearance
                         Switch(
                           value: widget.isDarkMode,
                           onChanged: (value) {

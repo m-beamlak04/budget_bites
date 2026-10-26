@@ -16,6 +16,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
   final Map<int, int> _quantities = {};
   bool _isSaving = false;
 
+  // Calculates the estimated total using each meal's price and selected quantity
   double get _estimatedTotal {
     double total = 0;
 
@@ -27,6 +28,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     return total;
   }
 
+  // Counts the total number of meal items selected
   int get _selectedMealCount {
     int count = 0;
 
@@ -37,6 +39,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     return count;
   }
 
+  // Asks for confirmation before clearing the current meal selections
   Future<void> _resetPlan() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -65,6 +68,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     });
   }
 
+  // Checks that the actual price is valid and has at most two decimal places
   String? _validatePrice(String input) {
     final text = input.trim();
     final price = double.tryParse(text);
@@ -84,10 +88,11 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     return null;
   }
 
+  // Opens the review dialog and saves the purchases after confirmation
   Future<void> _finishPlan() async {
-    final selectedMeals = _meals.where(
-          (meal) => (_quantities[meal.id] ?? 0) > 0,
-    ).toList();
+    final selectedMeals = _meals
+        .where((meal) => (_quantities[meal.id] ?? 0) > 0)
+        .toList();
 
     final priceControllers = <int, TextEditingController>{};
 
@@ -148,6 +153,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
                 }
               }
 
+              // Stores each meal's actual price in cents using its ID as the key
               final purchaseData = <int, int>{};
 
               for (final meal in selectedMeals) {
@@ -189,9 +195,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not save meal plan purchases.'),
-        ),
+        const SnackBar(content: Text('Could not save meal plan purchases.')),
       );
     } finally {
       if (mounted) {
@@ -202,10 +206,11 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     }
   }
 
+  // Creates a separate purchase record for each selected meal quantity
   Future<void> _savePlanPurchases(
-      List<Meal> selectedMeals,
-      Map<int, int> purchaseData,
-      ) async {
+    List<Meal> selectedMeals,
+    Map<int, int> purchaseData,
+  ) async {
     for (final meal in selectedMeals) {
       final quantity = _quantities[meal.id] ?? 0;
       final actualPriceMinor = purchaseData[meal.id]!;
@@ -228,6 +233,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     _loadMeals();
   }
 
+  // Loads available meals from the database for the meal plan
   Future<void> _loadMeals() async {
     final meals = await DatabaseHelper.instance.getAllMeals();
 
@@ -262,7 +268,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
                     title: Text(meal.name),
                     subtitle: Text(
                       'Estimated Price: \$${meal.estimatedPrice.toStringAsFixed(2)}\n'
-                          'Subtotal: \$${subtotal.toStringAsFixed(2)}',
+                      'Subtotal: \$${subtotal.toStringAsFixed(2)}',
                     ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,

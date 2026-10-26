@@ -1,3 +1,4 @@
+// Represents a meal with its details and estimated price
 class Meal {
   final int? id;
   final String name;
@@ -13,6 +14,7 @@ class Meal {
     required this.estimatedPrice,
   });
 
+  // Converts a Meal object into a map for storing in the database
   Map<String, Object?> toMap() {
     return {
       'id': id,
@@ -23,6 +25,7 @@ class Meal {
     };
   }
 
+  // Creates a Meal object from data retrieved from the database
   factory Meal.fromMap(Map<String, Object?> map) {
     return Meal(
       id: map['id'] as int?,

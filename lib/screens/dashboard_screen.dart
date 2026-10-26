@@ -29,6 +29,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _selectedCuisine = 'All';
   bool _isLoading = true;
 
+  // Builds the cuisine dropdown options from the available meals without duplication
   List<String> get _cuisines {
     final cuisines = _meals.map((meal) => meal.cuisine).toSet().toList();
     cuisines.sort();
@@ -36,6 +37,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return ['All', ...cuisines];
   }
 
+  // Filters the meals based on the cuisine selected by the user
   List<Meal> get _filteredMeals {
     if (_selectedCuisine == 'All') {
       return _meals;
@@ -46,6 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }).toList();
   }
 
+  // Loads meals from the database and updates the Dashboard
   Future<void> _loadMeals() async {
     setState(() {
       _isLoading = true;
@@ -59,6 +62,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         _meals = meals;
 
+        // Resets the filter if the selected cuisine no longer exists
         if (_selectedCuisine != 'All' &&
             !meals.any((meal) => meal.cuisine == _selectedCuisine)) {
           _selectedCuisine = 'All';
@@ -87,6 +91,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _loadMeals();
   }
 
+  // Builds the Dashboard with the meal plan, catalog, and navigation
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -140,6 +145,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
             const SizedBox(height: 24),
 
+            // Displays the meal catalog with cuisine filtering
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -205,6 +211,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                           );
 
+                          // Refreshes the catalog if a meal was changed or deleted
                           if (updated == true && mounted) {
                             _loadMeals();
                           }
@@ -252,6 +259,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
+      // Provides navigation to Lunch Lens, History, and Settings
       bottomNavigationBar: SafeArea(
         child: Row(
           children: [

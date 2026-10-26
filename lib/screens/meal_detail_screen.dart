@@ -23,6 +23,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
     _loadPurchases();
   }
 
+  // Loads purchase records associated with the selected meal
   Future<void> _loadPurchases() async {
     final allPurchases = await DatabaseHelper.instance.getAllPurchases();
 
@@ -72,6 +73,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
             Row(
               children: [
                 ElevatedButton(
+                  // Opens the form to edit this meal and notifies the Dashboard if updated
                   onPressed: () async {
                     final updated = await Navigator.push<bool>(
                       context,
@@ -90,6 +92,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () async {
+                      // Asks for confirmation before deleting the meal
                       final confirmed = await showDialog<bool>(
                         context: context,
                         builder: (dialogContext) {
@@ -117,6 +120,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                       );
                       if (confirmed != true || !context.mounted) return;
 
+                      // Deletes the meal and returns to the Dashboard if successful
                       try {
                         final deletedRows = await DatabaseHelper.instance
                             .deleteMeal(widget.meal.id!);
@@ -152,6 +156,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
 
             const SizedBox(height: 24),
 
+            // Displays the purchase history for this specific meal
             const Text(
               'Purchase Activity',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -167,6 +172,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                 ),
               )
             else
+              // Creates a card for each purchase with its price and date
               ..._purchases.map((purchase) {
                 return Card(
                   child: ListTile(
