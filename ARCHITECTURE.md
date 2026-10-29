@@ -14,9 +14,20 @@ The lib folder contains the main Dart files for Budget Bites. The project is org
 
 - main.dart - Starts the application.
 - database/ - Contains database_helper.dart, which handles SQLite operations.
+  - database_helper.dart
 - models/ - Contains meal.dart and purchase_log.dart, which represent the app's data.
+  - meal.dart
+  - purchase_log.dart
 - screens/ - Contains the different screens users interact with.
+  - dashboard_screen.dart
+  - history_screen.dart
+  - lunch_lens_screen.dart
+  - meal_detail_screen.dart
+  - meal_form_screen.dart
+  - meal_plan_screen.dart
+  - settings_screen.dart
 - services/ - Contains lunch_lens_predictor.dart, which handles the Lunch Lens prediction logic.
+  - lunch_lens_predictor.dart
 
 ## How the Components Work Together
 
