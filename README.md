@@ -92,6 +92,7 @@ Additional documentation for Budget Bites includes:
 - **AI_Usage_Log.md:** Documents how AI tools were used during the project.
 - **PROJECT_REPORT.pdf:** Covers the development process, testing, challenges, and project reflection.
 - **Kanban_Contribution_Evidence.pdf:** Contains ClickUp progress snapshots and evidence of project development.
+  - ClickUP Public Access URL: https://sharing.clickup.com/90141772401/b/h/6-901422326416-2/262afde69ee42bf
 
 ## License
 
